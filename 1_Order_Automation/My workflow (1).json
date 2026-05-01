@@ -1,0 +1,305 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-order",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f66cc08e-1611-4b30-948c-48a2f7c5b19d",
+      "name": "Webhook",
+      "webhookId": "6b8ab254-679c-41e0-85b1-7aa50eb4d8e5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4f8208dc-f01f-4c0b-81d5-4346f0a8deb4",
+              "name": "order_id",
+              "value": "={{ \"ORD\" + Math.floor(Math.random() * 90000 + 10000) }}",
+              "type": "string"
+            },
+            {
+              "id": "dea35d34-46d3-42d9-95e5-ae7bb90027d8",
+              "name": "customer_name",
+              "value": "={{ $json.body.customer_name }}",
+              "type": "string"
+            },
+            {
+              "id": "168fe81a-4b6c-452d-a8f3-441a3c220202",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "f6494755-d145-49a0-b2fa-744d0eead778",
+              "name": "product",
+              "value": "={{ $json.body.product }}",
+              "type": "string"
+            },
+            {
+              "id": "c789ed25-8637-4d63-a45a-497e9a3db5a8",
+              "name": "amount",
+              "value": "={{ $json.body.amount }}",
+              "type": "string"
+            },
+            {
+              "id": "eaafc108-02b9-468b-9c9b-9cad712e50d6",
+              "name": "status",
+              "value": "Processing",
+              "type": "string"
+            },
+            {
+              "id": "51a40458-7a90-437a-91a8-68be2b8a4c90",
+              "name": "order_date",
+              "value": "={{ new Date().toLocaleDateString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "df300784-c5a4-40ed-b227-2cd3106ed2e8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iYF2ViB3BYXpJ4cBwn8eGO3mGGj_OmFmJoVF0EDboeY",
+          "mode": "list",
+          "cachedResultName": "New Project ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iYF2ViB3BYXpJ4cBwn8eGO3mGGj_OmFmJoVF0EDboeY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iYF2ViB3BYXpJ4cBwn8eGO3mGGj_OmFmJoVF0EDboeY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order ID": "={{ $json.order_id }}",
+            "Customer Name": "={{ $json.customer_name }}",
+            "Email": "={{ $json.email }}",
+            "Product": "={{ $json.product }}",
+            "Amount": "={{ $json.amount }}",
+            "Status": "={{ $json.status }}",
+            "Order Date": "={{ $json.order_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Order ID",
+              "displayName": "Order ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Product",
+              "displayName": "Product",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order Date",
+              "displayName": "Order Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        0
+      ],
+      "id": "5f5c0aec-4c83-47d9-9e24-30cdcd83d61d",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9GI7JPyruaC5HDIN",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "=Order Confirmed —{{ $json['Order ID'] }} ",
+        "message": "=Hi {{ $json['Customer Name'] }},  Thank you for your order! 🎉  Here are your order details: ─────────────────────────── Order ID   : {{ $json['Order ID'] }} Product    : {{ $json.Product }} Amount     : ₹{{ $json.Amount }} Status     : {{ $json.Status }} Date       : {{ $json['Order Date'] }} ───────────────────────────  We'll notify you once your order ships.  Thanks, TechStore Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "70be2784-79e1-4511-b386-fff1cb78e478",
+      "name": "Send a message",
+      "webhookId": "43a27572-e310-4653-8187-ef37b7e1d7b0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jtMiY8YOVXHephtX",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "hydraquick@gmail.com",
+        "subject": "=New Order Received — {{ $('Append row in sheet').item.json['Order ID'] }}",
+        "message": "=New order just came in!  Customer : {{ $('Append row in sheet').item.json['Customer Name'] }} Product  : {{ $('Append row in sheet').item.json.Product }} Amount   :{{ $('Append row in sheet').item.json.Amount }} ₹ Order ID : {{ $('Append row in sheet').item.json['Order ID'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "6a300b37-a99e-4f20-ac60-c60c0bbdcd24",
+      "name": "Send a message1",
+      "webhookId": "d786bdc8-70a9-4558-ab75-2038a18e3a26",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jtMiY8YOVXHephtX",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7be2545f-0224-4f04-9255-0cecfafd18a9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b347f78f43288e1fc573b89740b1760babc0198783c3de706823759ad007c3dc"
+  },
+  "id": "1zkE9SzHiNddEEol",
+  "tags": []
+}
