@@ -16,3 +16,22 @@ the full lifecycle of a new order in real time.
 - **Webhook** — REST API trigger
 
 ## Architecture
+- Webhook → Edit Fields → Google Sheets → Gmail (Customer) → Gmail (Admin)
+## How to Run
+1. Import `workflow.json` into your n8n instance
+2. Connect your Google Sheets and Gmail credentials
+3. Activate the workflow
+4. Send a POST request to the webhook URL:
+
+```json
+{
+  "customer_name": "Rahul Shah",
+  "email": "customer@email.com",
+  "product": "Wireless Headphones",
+  "amount": "2999"
+}
+```
+
+## Business Impact
+Eliminates manual order processing — what used to take 
+10-15 minutes per order now happens automatically in under 2 seconds.
