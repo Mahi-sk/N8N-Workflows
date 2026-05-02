@@ -1,0 +1,281 @@
+{
+  "name": "Podcast Summarizer Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "id": "40fe7a14-c83e-4d28-adc8-bb194eb3a97e",
+      "name": "Telegram Trigger",
+      "webhookId": "2074cb94-3b9c-4ac0-b2d3-0f0353a04cac",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.message.text;\nconst chatId = $input.first().json.message.chat.id;\n\nconst regex = /(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/|youtube\\.com\\/embed\\/)([a-zA-Z0-9_-]{11})/;\nconst match = text.match(regex);\n\nif (!match) {\n  return [{ json: { error: true, chatId, videoId: null } }];\n}\n\nreturn [{ json: { videoId: match[1], chatId, originalUrl: text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [208, 0],
+      "id": "f288a6c4-f9ec-440c-be80-4da6e24cf4fa",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1b04c848-d12b-4b92-a7c6-473ca3f1b4bc",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [416, 0],
+      "id": "3a4427ef-0465-4aa3-b542-f18379f007d8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Code in JavaScript').item.json.chatId }}",
+        "text": "❌ That doesn't look like a valid YouTube link. Please send a proper YouTube URL.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [624, -96],
+      "id": "a4b12dc4-516e-4e39-8f4c-4a53e26f1767",
+      "name": "Send a text message",
+      "webhookId": "b97d6d76-543a-420f-9e0f-28aedd2e511c",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.supadata.ai/v1/youtube/transcript",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "videoId",
+              "value": "={{ $json.videoId }}"
+            },
+            {
+              "name": "lang",
+              "value": "en"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "YOUR_SUPADATA_API_KEY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [688, 128],
+      "id": "461334aa-dcec-4242-a8b1-8ff1b4b73ebe",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://www.youtube.com/oembed",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "=https://www.youtube.com/watch?v={{ $('If').item.json.videoId }}"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [896, 128],
+      "id": "69634455-dc91-4142-95c2-0d87c12b71da",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-20250514",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-20250514"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a sharp podcast analyst. You extract exactly what was discussed, not generic observations. You are specific — you use names, numbers, claims, and quotes from the actual conversation. You never write vague summaries. Every line must contain real information from the podcast. Never use *, _, backtick, or [ ] characters in your response."
+            },
+            {
+              "content": "=Podcast: {{ $('HTTP Request1').item.json.title }}\nChannel: {{ $('HTTP Request1').item.json.author_name }}\n\nTranscript:\n{{ $('HTTP Request').item.json.content.slice(0, 12000) }}\n\nReturn EXACTLY this format:\n\n🎙 [Podcast Title]\n👤 [Host] x [Guest] — [Topic in 5 words]\n\n━━━━━━━━━━━━━━━━━━━\n\n🧩 WHAT THIS CONVERSATION IS REALLY ABOUT\n[2 sentences. Not what the title says — what they actually spent most time on]\n\n━━━━━━━━━━━━━━━━━━━\n\n❓ KEY QUESTIONS DISCUSSED\n[List the actual questions the host asked that drove the conversation. Be specific.]\n\nQ: [exact topic of question]\n→ [guest's actual answer in 1-2 lines. Use their words, their numbers, their claims]\n\nQ: [exact topic of question]\n→ [guest's actual answer in 1-2 lines]\n\nQ: [exact topic of question]\n→ [guest's actual answer in 1-2 lines]\n\n[max 6 questions — only the ones that had a real meaty answer]\n\n━━━━━━━━━━━━━━━━━━━\n\n💎 HIGHLIGHTS WORTH REMEMBERING\n[Max 4 points. Only things that are specific, surprising, or non-obvious. No generic statements. Must include actual claims, numbers, or names from the podcast.]\n\n━━━━━━━━━━━━━━━━━━━\n\n🔥 CONTROVERSIAL OR STRONG OPINIONS\n[Only include this section if the guest said something bold, unpopular, or that challenges mainstream thinking. Quote their actual stance. If nothing controversial was said, write: Nothing controversial in this one.]\n\n━━━━━━━━━━━━━━━━━━━\n\n⚡ ONE LINE VERDICT\n[Would you recommend this podcast and why — brutally honest, one sentence]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [1104, 128],
+      "id": "46dd6152-1ff6-42dc-8395-045af4d9a1e6",
+      "name": "Message a model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YOUR_ANTHROPIC_CREDENTIAL_ID",
+          "name": "YOUR_ANTHROPIC_CREDENTIAL_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.content[0].text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1456, 128],
+      "id": "dfab0448-ae1c-4c6a-95ff-6b758f508aa6",
+      "name": "Send a text message1",
+      "webhookId": "10d8257f-6365-48c5-89e3-ab836768fea5",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL_NAME"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "155ecd18-0c93-40b8-a5b4-a1e3ec48215b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b347f78f43288e1fc573b89740b1760babc0198783c3de706823759ad007c3dc"
+  },
+  "id": "VrbfODHuiGzXtgk3",
+  "tags": []
+}
